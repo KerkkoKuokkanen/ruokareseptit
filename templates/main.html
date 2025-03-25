@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recipe Hub</title>
+</head>
+<body>
+    <h1>Welcome to the Recipe Hub!</h1>
+
+    {% if username %}
+        <p>Hello, {{ username }}!</p>
+        <form action="{{ url_for('home') }}" method="get">
+            <button type="submit">Go to Your Profile</button>
+        </form>
+        <p><a href="{{ url_for('logout') }}">Logout</a></p>
+    {% else %}
+        <p><a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a></p>
+    {% endif %}
+
+	<h2>Search Recipes</h2>
+	<form method="get" action="{{ url_for('main_page') }}">
+	    <input type="text" name="search" placeholder="Search by recipe name" value="{{ search_term }}">
+	    <button type="submit">Search</button>
+	</form>
+
+
+    <h2>Latest Recipes</h2>
+    {% for user, title, instructions, category in recent_recipes %}
+        <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+            <strong>{{ title }}</strong> ({{ category }})<br>
+            <em>by {{ user }}</em>
+            <p>{{ instructions }}</p>
+        </div>
+    {% else %}
+        <p>No recipes added yet.</p>
+    {% endfor %}
+</body>
+</html>

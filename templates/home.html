@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome</title>
+</head>
+<body>
+	<form action="{{ url_for('main_page') }}" method="get">
+		<button type="submit">Back to Main Page</button>
+	</form>
+	
+    <h2>Welcome, {{ username }}!</h2>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+
+    <h3>Add a Recipe</h3>
+    <form method="POST">
+        <label>Recipe Name:</label><br>
+        <input type="text" name="title" required><br><br>
+
+        <label>How to Make It:</label><br>
+        <textarea name="instructions" rows="5" cols="40" required></textarea><br><br>
+
+        <label>Category:</label><br>
+        <select name="category" required>
+            <option value="dessert">Dessert</option>
+            <option value="snack">Snack</option>
+            <option value="main course">Main Course</option>
+        </select><br><br>
+
+        <input type="submit" value="Submit Recipe">
+    </form>
+
+    <h3>Your Recipes</h3>
+	{% for id, title, instructions, category in recipes %}
+	    <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+	        <strong>{{ title }}</strong> ({{ category }})<br>
+	        <p>{{ instructions }}</p>
+	        <form method="POST" action="{{ url_for('delete', recipe_id=id) }}" style="display:inline;">
+	            <button type="submit">Delete</button>
+	        </form>
+	        <form method="GET" action="{{ url_for('edit', recipe_id=id) }}" style="display:inline;">
+	            <button type="submit">Edit</button>
+	        </form>
+	    </div>
+	{% else %}
+	    <p>No recipes yet.</p>
+	{% endfor %}
+</body>
+</html>
+
