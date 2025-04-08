@@ -30,20 +30,39 @@
     </form>
 
     <h3>Your Recipes</h3>
-	{% for id, title, instructions, category in recipes %}
-	    <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-	        <strong>{{ title }}</strong> ({{ category }})<br>
-	        <p>{{ instructions }}</p>
-	        <form method="POST" action="{{ url_for('delete', recipe_id=id) }}" style="display:inline;">
-	            <button type="submit">Delete</button>
-	        </form>
-	        <form method="GET" action="{{ url_for('edit', recipe_id=id) }}" style="display:inline;">
-	            <button type="submit">Edit</button>
-	        </form>
-	    </div>
-	{% else %}
-	    <p>No recipes yet.</p>
-	{% endfor %}
+
+{% for id, title, instructions, category in recipes %}
+    <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
+        <strong>{{ title }}</strong> ({{ category }})<br>
+        <p>{{ instructions }}</p>
+
+        <form method="POST" action="{{ url_for('delete', recipe_id=id) }}" style="display:inline;">
+            <button type="submit">Delete</button>
+        </form>
+        <form method="GET" action="{{ url_for('edit', recipe_id=id) }}" style="display:inline;">
+            <button type="submit">Edit</button>
+        </form>
+
+        {% set rating = ratings_data[id] %}
+        {% if rating.avg %}
+            <p><strong>Average Rating:</strong> {{ rating.avg }} / 5 ({{ rating.count }} ratings)</p>
+        {% else %}
+            <p><strong>No ratings yet.</strong></p>
+        {% endif %}
+
+        {% if rating.comments %}
+            <p><strong>Recent Comments:</strong></p>
+            <ul>
+                {% for uname, r, c in rating.comments %}
+                    <li><strong>{{ uname }}</strong> rated {{ r }}/5 — "{{ c }}"</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>
+{% else %}
+    <p>You haven’t added any recipes yet.</p>
+{% endfor %}
+
 </body>
 </html>
 
