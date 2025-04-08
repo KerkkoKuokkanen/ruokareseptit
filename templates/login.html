@@ -6,6 +6,7 @@
 <body>
     <h2>Login</h2>
     <form method="POST">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         Username: <input type="text" name="username" required><br><br>
         Password: <input type="password" name="password" required><br><br>
         <input type="submit" value="Login">

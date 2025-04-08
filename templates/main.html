@@ -40,6 +40,7 @@
 
         {% if username %}
             <form method="POST">
+				<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                 <input type="hidden" name="recipe_id" value="{{ id }}">
                 <label for="rating">Rate (1–5):</label>
                 <select name="rating" required>

@@ -13,6 +13,7 @@
 
     <h3>Add a Recipe</h3>
     <form method="POST">
+		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <label>Recipe Name:</label><br>
         <input type="text" name="title" required><br><br>
 
@@ -37,6 +38,7 @@
         <p>{{ instructions }}</p>
 
         <form method="POST" action="{{ url_for('delete', recipe_id=id) }}" style="display:inline;">
+			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             <button type="submit">Delete</button>
         </form>
         <form method="GET" action="{{ url_for('edit', recipe_id=id) }}" style="display:inline;">

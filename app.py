@@ -2,6 +2,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 import hashlib
+import secrets
+
+def get_csrf_token():
+    if "csrf_token" not in session:
+        session["csrf_token"] = secrets.token_hex(16)
+    return session["csrf_token"]
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -53,6 +59,8 @@ def main_page():
     username = session.get("username")
 
     if request.method == "POST" and username:
+        if request.form.get("csrf_token") != session.get("csrf_token"):
+            return "Invalid CSRF token", 403
         recipe_id = request.form["recipe_id"]
         rating = int(request.form["rating"])
         comment = request.form["comment"][:120]  # limit to 120 chars
@@ -99,7 +107,7 @@ def main_page():
                 "comments": comments
             }
 
-    return render_template("main.html", recent_recipes=recent_recipes, username=username, search_term=search_term, ratings_data=ratings_data)
+    return render_template("main.html", recent_recipes=recent_recipes, username=username, search_term=search_term, ratings_data=ratings_data, csrf_token=get_csrf_token())
 
 
 
@@ -109,6 +117,8 @@ def home():
         return redirect(url_for("login"))
 
     if request.method == "POST":
+        if request.form.get("csrf_token") != session.get("csrf_token"):
+            return "Invalid CSRF token", 403
         title = request.form["title"]
         instructions = request.form["instructions"]
         category = request.form["category"]
@@ -144,13 +154,15 @@ def home():
                 "comments": comments
             }
 
-    return render_template("home.html", username=session["username"], recipes=recipes, ratings_data=ratings_data)
+    return render_template("home.html", username=session["username"], recipes=recipes, ratings_data=ratings_data, csrf_token=get_csrf_token())
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
 
     if request.method == "POST":
+        if request.form.get("csrf_token") != session.get("csrf_token"):
+            return "Invalid CSRF token", 403
         username = request.form["username"]
         password = request.form["password"]
 
@@ -167,12 +179,15 @@ def register():
             except sqlite3.IntegrityError:
                 error = "Username already taken. Please choose another."
 
-    return render_template("register.html", error=error)
+    return render_template("register.html", error=error, csrf_token=get_csrf_token())
+
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
+        if request.form.get("csrf_token") != session.get("csrf_token"):
+            return "Invalid CSRF token", 403
         username = request.form["username"]
         password = request.form["password"]
 
@@ -188,7 +203,7 @@ def login():
             else:
                 return "Invalid credentials."
 
-    return render_template("login.html")
+    return render_template("login.html", csrf_token=get_csrf_token())
 
 @app.route("/logout")
 def logout():
@@ -199,6 +214,9 @@ def logout():
 def delete(recipe_id):
     if "username" not in session:
         return redirect(url_for("login"))
+
+    if request.form.get("csrf_token") != session.get("csrf_token"):
+        return "Invalid CSRF token", 403
 
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
@@ -216,6 +234,9 @@ def edit(recipe_id):
         cursor = conn.cursor()
 
         if request.method == "POST":
+            if request.form.get("csrf_token") != session.get("csrf_token"):
+                return "Invalid CSRF token", 403
+
             title = request.form["title"]
             instructions = request.form["instructions"]
             category = request.form["category"]
@@ -234,7 +255,7 @@ def edit(recipe_id):
         recipe = cursor.fetchone()
 
         if recipe:
-            return render_template("edit.html", recipe_id=recipe_id, recipe=recipe)
+            return render_template("edit.html", recipe_id=recipe_id, recipe=recipe, csrf_token=get_csrf_token())
         else:
             return "Recipe not found."
 
