@@ -16,3 +16,12 @@
 - Tyyli on vielä olematon ja verkkosivun ulkoasua tulee parantaa
 - Mitään extroja ei ole vielä lisätty, vain välipalautusta varten vaaditut toiminnot lisätty
 - Turvallisuutta ei ole otettu huomioon
+
+# Välipalautus 3
+- Turvallisuutta parannettu monilla tavoin
+- Salasanan pituus tulee olla vähintään 8 merkkiä
+- Salasanat tallennetaan tietokantaan Hasheina
+- Crtf tokenit lisätty
+- Syöttökentät eivät voi olla tyhjiä missään tilanteissa
+- Käyttäjä pystyy arvostelemaan muita reseptejä ja näkee kotisivuilla saamansa arviot
+- Resepteillä on luokittelu (main course, dessert, snack)
