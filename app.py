@@ -1,6 +1,10 @@
 
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
+import hashlib
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"  # needed for session
@@ -142,24 +146,29 @@ def home():
 
     return render_template("home.html", username=session["username"], recipes=recipes, ratings_data=ratings_data)
 
-
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    error = None
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
 
-        try:
-            with sqlite3.connect("database.db") as conn:
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-                conn.commit()
-                return redirect(url_for("login"))
-        except sqlite3.IntegrityError:
-            return "Username already taken. Please choose another."
+        if len(password) < 8:
+            error = "Password must be at least 8 characters long."
+        else:
+            try:
+                with sqlite3.connect("database.db") as conn:
+                    cursor = conn.cursor()
+                    hashed_password = hash_password(password)
+                    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+                    conn.commit()
+                    return redirect(url_for("login"))
+            except sqlite3.IntegrityError:
+                error = "Username already taken. Please choose another."
 
-    return render_template("register.html")
+    return render_template("register.html", error=error)
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -169,7 +178,8 @@ def login():
 
         with sqlite3.connect("database.db") as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+            hashed_password = hash_password(password)
+            cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, hashed_password))
             user = cursor.fetchone()
 
             if user:
