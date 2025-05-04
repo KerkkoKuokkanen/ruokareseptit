@@ -35,7 +35,7 @@
 {% for id, title, instructions, category in recipes %}
     <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
         <strong>{{ title }}</strong> ({{ category }})<br>
-        <p>{{ instructions }}</p>
+        <p>{{ instructions.replace('\n', '<br>')|safe }}</p>
 
         <form method="POST" action="{{ url_for('delete', recipe_id=id) }}" style="display:inline;">
 			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">

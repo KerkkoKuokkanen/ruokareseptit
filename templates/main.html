@@ -17,10 +17,19 @@
     {% endif %}
 
 	<h2>Search Recipes</h2>
-	<form method="get" action="{{ url_for('main_page') }}">
-	    <input type="text" name="search" placeholder="Search by recipe name" value="{{ search_term }}">
-	    <button type="submit">Search</button>
-	</form>
+<form method="get" action="{{ url_for('main_page') }}">
+    <input type="text" name="search" placeholder="Search by recipe name" value="{{ search_term }}">
+
+    <select name="category">
+        <option value="any" {% if selected_category == "any" %}selected{% endif %}>Any Category</option>
+        <option value="main course" {% if selected_category == "main course" %}selected{% endif %}>Main Course</option>
+        <option value="dessert" {% if selected_category == "dessert" %}selected{% endif %}>Dessert</option>
+        <option value="snack" {% if selected_category == "snack" %}selected{% endif %}>Snack</option>
+    </select>
+
+    <button type="submit">Search</button>
+</form>
+
 
 
     <h2>Latest Recipes</h2>
@@ -29,7 +38,7 @@
     <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
         <strong>{{ title }}</strong> ({{ category }})<br>
         <em>by {{ user }}</em>
-        <p>{{ instructions }}</p>
+        <p>{{ instructions.replace('\n', '<br>')|safe }}</p>
 
         {% set rating = ratings_data[id] %}
         {% if rating.avg %}

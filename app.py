@@ -56,6 +56,7 @@ def redirect_to_main():
 @app.route("/main", methods=["GET", "POST"])
 def main_page():
     search_term = request.args.get("search", "")
+    selected_category = request.args.get("category", "any")
     username = session.get("username")
 
     if request.method == "POST" and username:
@@ -63,7 +64,7 @@ def main_page():
             return "Invalid CSRF token", 403
         recipe_id = request.form["recipe_id"]
         rating = int(request.form["rating"])
-        comment = request.form["comment"][:120]  # limit to 120 chars
+        comment = request.form["comment"][:120]
 
         with sqlite3.connect("database.db") as conn:
             cursor = conn.cursor()
@@ -73,27 +74,30 @@ def main_page():
             """, (recipe_id, username, rating, comment))
             conn.commit()
 
-        return redirect(url_for("main_page", search=search_term))
+        return redirect(url_for("main_page", search=search_term, category=selected_category))
 
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
-        if search_term:
+
+        # Build query dynamically
+        if selected_category != "any":
+            cursor.execute("""
+                SELECT id, username, title, instructions, category
+                FROM recipes
+                WHERE title LIKE ? AND category = ?
+                ORDER BY id DESC
+            """, ('%' + search_term + '%', selected_category))
+        else:
             cursor.execute("""
                 SELECT id, username, title, instructions, category
                 FROM recipes
                 WHERE title LIKE ?
                 ORDER BY id DESC
             """, ('%' + search_term + '%',))
-        else:
-            cursor.execute("""
-                SELECT id, username, title, instructions, category
-                FROM recipes
-                ORDER BY id DESC
-                LIMIT 10
-            """)
+
         recent_recipes = cursor.fetchall()
 
-        # Get ratings per recipe
+        # Load ratings
         ratings_data = {}
         for recipe in recent_recipes:
             recipe_id = recipe[0]
@@ -107,7 +111,7 @@ def main_page():
                 "comments": comments
             }
 
-    return render_template("main.html", recent_recipes=recent_recipes, username=username, search_term=search_term, ratings_data=ratings_data, csrf_token=get_csrf_token())
+    return render_template("main.html", recent_recipes=recent_recipes, username=username, search_term=search_term, ratings_data=ratings_data, csrf_token=get_csrf_token(), selected_category=selected_category)
 
 
 
