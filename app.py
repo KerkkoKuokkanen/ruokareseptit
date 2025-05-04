@@ -208,7 +208,7 @@ def login():
 @app.route("/logout")
 def logout():
     session.pop("username", None)
-    return redirect(url_for("login"))
+    return redirect(url_for("main_page"))
 
 @app.route("/delete/<int:recipe_id>", methods=["POST"])
 def delete(recipe_id):
