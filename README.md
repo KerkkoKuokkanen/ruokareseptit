@@ -25,3 +25,14 @@
 - Syöttökentät eivät voi olla tyhjiä missään tilanteissa
 - Käyttäjä pystyy arvostelemaan muita reseptejä ja näkee kotisivuilla saamansa arviot
 - Resepteillä on luokittelu (main course, dessert, snack)
+
+# Lopullinen palautus
+- Tekoälyä käytetty
+- Sovelluksesta löytyy kaikki kurssilla vaaditut toiminnot
+- Sovellus on reseptisivusto, joka näyttää käyttäjien luomia reseptejä
+- Reseptit ovat luomis järjestyksessä sivustolla
+- Reseptejä voidaan hakea avainsanalla sekä kategorian mukaan
+- Käyttäjät voivat luoda reseptejä ja arvosella jo luotuja reseptejä
+- Käyttäjä pystyy muokkaamaan ja poistamaan luomiaan reseptejä
+- Tietoturva vaatimukset on otettu huomioon sovelluksessa
+- Sovellus pyritty tekemään tarpeeksi hyväksi että saisin kurssin suoritettua :D
