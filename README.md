@@ -9,6 +9,12 @@
 - Käyttäjä pystyy valitsemaan reseptille yhden tai useamman luokittelun, kuten esimerkiksi jälkiruoka tai pääruoka. Mahdolliset luokat ovat tietokannassa.
 - Käyttäjä pystyy lähettämään toisen käyttäjän reseptiin arvostelun ja kommentin, joka tulee näkyviin sovelluksessa.
 
+# Välipalautus 1
+- Tein kurssin jo viime vuonna mutta toteutus ei vastannut kaikkia vaatimuksia
+- Tämän hetkinen välipalautus 1 sisällyttää kaiken toiminnan mitä lopullisessa palautuksessa lukee
+- Parannuksia mitä tulee toteuttaa on että käyttäjän tulee pystyä näkemään toisten profiilit
+- Profiilin näkemiseen kuuluu nähdä heidän tilastot arvioinneista, sekä resepteistä
+
 # Välipalautus 2
 - Sovellukseen on lisätty mahdollisuus kirjautua sisään ja ulos
 - Etusivulla näkyy viimeisimmäksi lisätyt reseptit, max 10
