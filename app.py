@@ -229,6 +229,41 @@ def delete(recipe_id):
 
     return redirect(url_for("home"))
 
+@app.route("/profile/<username>")
+def profile(username):
+    with sqlite3.connect("database.db") as conn:
+        cursor = conn.cursor()
+        
+        # 1. Fetch recipes sorted by the number of reviews (Highest first)
+        # We use LEFT JOIN so recipes with 0 reviews still show up
+        cursor.execute("""
+            SELECT r.id, r.title, r.instructions, r.category, COUNT(ra.id) as review_count, AVG(ra.rating)
+            FROM recipes r
+            LEFT JOIN ratings ra ON r.id = ra.recipe_id
+            WHERE r.username = ?
+            GROUP BY r.id
+            ORDER BY review_count DESC
+        """, (username,))
+        
+        user_recipes = cursor.fetchall()
+
+        # 2. Get global stats (Average and Total count)
+        cursor.execute("""
+            SELECT AVG(ra.rating), COUNT(ra.id)
+            FROM ratings ra
+            JOIN recipes r ON ra.recipe_id = r.id 
+            WHERE r.username = ?
+        """, (username,))
+        
+        avg_result, total_reviews = cursor.fetchone()
+        overall_avg = round(avg_result, 1) if avg_result else "No ratings yet"
+
+    return render_template("profile.html", 
+                           profile_user=username, 
+                           recipes=user_recipes, 
+                           overall_avg=overall_avg, 
+                           total_reviews=total_reviews)
+
 @app.route("/edit/<int:recipe_id>", methods=["GET", "POST"])
 def edit(recipe_id):
     if "username" not in session:

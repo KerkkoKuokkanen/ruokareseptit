@@ -37,7 +37,8 @@
 {% for id, user, title, instructions, category in recent_recipes %}
     <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
         <strong>{{ title }}</strong> ({{ category }})<br>
-        <em>by {{ user }}</em>
+        <em>by <a href="{{ url_for('profile', username=user) }}">{{ user }}</a></em>
+        
         <p>{{ instructions.replace('\n', '<br>')|safe }}</p>
 
         {% set rating = ratings_data[id] %}

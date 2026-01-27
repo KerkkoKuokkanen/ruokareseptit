@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ profile_user }}</title>
+</head>
+<body>
+    <h1>{{ profile_user }}</h1>
+
+    <p>
+        <strong>Average Rating:</strong> {{ overall_avg }} / 5 
+        {% if total_reviews > 0 %}
+            (Total Reviews: {{ total_reviews }})
+        {% else %}
+            (No reviews yet)
+        {% endif %}
+    </p>
+    
+    <hr>
+    <h3>Recipes (Sorted by Popularity):</h3>
+    
+    {% for id, title, instructions, category, count, avg in recipes %}
+        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+            <h4>{{ title }} ({{ category }})</h4>
+            <p>{{ instructions.replace('\n', '<br>')|safe }}</p>
+            <small>
+                <strong>Rating:</strong> {{ avg|round(1) if avg else 'N/A' }} 
+                (<strong>{{ count }}</strong> reviews)
+            </small>
+        </div>
+    {% else %}
+        <p>This user hasn't posted any recipes yet.</p>
+    {% endfor %}
+
+    <br>
+    <a href="{{ url_for('main_page') }}">Back to Feed</a>
+</body>
+</html>
