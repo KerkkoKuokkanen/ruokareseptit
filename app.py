@@ -163,28 +163,37 @@ def home():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     error = None
+    entered_username = "" # Default to empty
 
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
             return "Invalid CSRF token", 403
-        username = request.form["username"]
+        
+        entered_username = request.form["username"] # Capture what they typed
         password = request.form["password"]
 
         if len(password) < 8:
             error = "Password must be at least 8 characters long."
+            # We return the template here so the username is preserved
+            return render_template("register.html", error=error, 
+                                   csrf_token=get_csrf_token(), 
+                                   entered_username=entered_username)
         else:
             try:
                 with sqlite3.connect("database.db") as conn:
                     cursor = conn.cursor()
                     hashed_password = hash_password(password)
-                    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
+                    cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (entered_username, hashed_password))
                     conn.commit()
                     return redirect(url_for("login"))
             except sqlite3.IntegrityError:
                 error = "Username already taken. Please choose another."
+                # We return the template here too
+                return render_template("register.html", error=error, 
+                                       csrf_token=get_csrf_token(), 
+                                       entered_username=entered_username)
 
     return render_template("register.html", error=error, csrf_token=get_csrf_token())
-
 
 
 @app.route("/login", methods=["GET", "POST"])
