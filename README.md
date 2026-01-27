@@ -23,6 +23,11 @@
 - Mitään extroja ei ole vielä lisätty, vain välipalautusta varten vaaditut toiminnot lisätty
 - Turvallisuutta ei ole otettu huomioon
 
+- Uusi välipalautus 2:
+- Kaikki samat toiminnot kuten lopullisessa palautuksessa
+- Lisätty mahdollisuus vierailla toisten käyttäjien omlla sivulla
+- Käyttäjäsivulta näkee kaikkien arvostelujen keskiarvon sekä kaikki reseptit
+
 # Välipalautus 3
 - Turvallisuutta parannettu monilla tavoin
 - Salasanan pituus tulee olla vähintään 8 merkkiä
