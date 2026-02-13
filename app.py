@@ -113,20 +113,32 @@ def main_page():
 
     return render_template("main.html", recent_recipes=recent_recipes, username=username, search_term=search_term, ratings_data=ratings_data, csrf_token=get_csrf_token(), selected_category=selected_category)
 
-
-
 @app.route("/home", methods=["GET", "POST"])
 def home():
     if "username" not in session:
         return redirect(url_for("login"))
 
+    error = None # Track errors
+    
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
             return "Invalid CSRF token", 403
+            
         title = request.form["title"]
         instructions = request.form["instructions"]
         category = request.form["category"]
         username = session["username"]
+
+        # --- LIMIT CHECK ---
+        if len(instructions) > 1500:
+            error = f"Recipe is too long ({len(instructions)} characters). Please limit to 1500."
+            # Fetch recipes again so the page can still load correctly with the error
+            with sqlite3.connect("database.db") as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT id, title, instructions, category FROM recipes WHERE username = ?", (username,))
+                recipes = cursor.fetchall()
+                # (You would also need to fetch ratings_data here if you want it to show up during an error)
+            return render_template("home.html", username=username, recipes=recipes, error=error, csrf_token=get_csrf_token())
 
         with sqlite3.connect("database.db") as conn:
             cursor = conn.cursor()
@@ -135,16 +147,14 @@ def home():
                 (username, title, instructions, category)
             )
             conn.commit()
-
         return redirect(url_for("home"))
 
-    # Fetch user's recipes
+    # Regular GET logic (unchanged)
     with sqlite3.connect("database.db") as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT id, title, instructions, category FROM recipes WHERE username = ?", (session["username"],))
         recipes = cursor.fetchall()
-
-        # Fetch ratings for each recipe
+        
         ratings_data = {}
         for recipe in recipes:
             recipe_id = recipe[0]
@@ -152,13 +162,46 @@ def home():
             avg_rating, count = cursor.fetchone()
             cursor.execute("SELECT username, rating, comment FROM ratings WHERE recipe_id = ? ORDER BY id DESC LIMIT 3", (recipe_id,))
             comments = cursor.fetchall()
-            ratings_data[recipe_id] = {
-                "avg": round(avg_rating, 1) if avg_rating else None,
-                "count": count,
-                "comments": comments
-            }
+            ratings_data[recipe_id] = {"avg": round(avg_rating, 1) if avg_rating else None, "count": count, "comments": comments}
 
     return render_template("home.html", username=session["username"], recipes=recipes, ratings_data=ratings_data, csrf_token=get_csrf_token())
+
+@app.route("/edit/<int:recipe_id>", methods=["GET", "POST"])
+def edit(recipe_id):
+    if "username" not in session:
+        return redirect(url_for("login"))
+
+    with sqlite3.connect("database.db") as conn:
+        cursor = conn.cursor()
+
+        if request.method == "POST":
+            if request.form.get("csrf_token") != session.get("csrf_token"):
+                return "Invalid CSRF token", 403
+
+            title = request.form["title"]
+            instructions = request.form["instructions"]
+            category = request.form["category"]
+
+            # --- LIMIT CHECK ---
+            if len(instructions) > 1500:
+                error = f"Recipe is too long ({len(instructions)} characters). Please limit to 1500."
+                return render_template("edit.html", recipe_id=recipe_id, recipe=(title, instructions, category), error=error, csrf_token=get_csrf_token())
+
+            cursor.execute("""
+                UPDATE recipes
+                SET title = ?, instructions = ?, category = ?
+                WHERE id = ? AND username = ?
+            """, (title, instructions, category, recipe_id, session["username"]))
+            conn.commit()
+            return redirect(url_for("home"))
+
+        cursor.execute("SELECT title, instructions, category FROM recipes WHERE id = ? AND username = ?", (recipe_id, session["username"]))
+        recipe = cursor.fetchone()
+
+        if recipe:
+            return render_template("edit.html", recipe_id=recipe_id, recipe=recipe, csrf_token=get_csrf_token())
+        else:
+            return "Recipe not found."
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -198,25 +241,34 @@ def register():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    error = None
+    entered_username = ""
+
     if request.method == "POST":
         if request.form.get("csrf_token") != session.get("csrf_token"):
             return "Invalid CSRF token", 403
-        username = request.form["username"]
+            
+        entered_username = request.form["username"]
         password = request.form["password"]
 
         with sqlite3.connect("database.db") as conn:
             cursor = conn.cursor()
             hashed_password = hash_password(password)
-            cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, hashed_password))
+            cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (entered_username, hashed_password))
             user = cursor.fetchone()
 
             if user:
-                session["username"] = username
+                session["username"] = entered_username
                 return redirect(url_for("home"))
             else:
-                return "Invalid credentials."
-
-    return render_template("login.html", csrf_token=get_csrf_token())
+                # Instead of return "Invalid credentials", we do this:
+                error = "Invalid username or password."
+    
+    # This covers both the initial GET request and the failed POST request
+    return render_template("login.html", 
+                           csrf_token=get_csrf_token(), 
+                           error=error, 
+                           entered_username=entered_username)
 
 @app.route("/logout")
 def logout():
@@ -273,39 +325,6 @@ def profile(username):
                            overall_avg=overall_avg, 
                            total_reviews=total_reviews)
 
-@app.route("/edit/<int:recipe_id>", methods=["GET", "POST"])
-def edit(recipe_id):
-    if "username" not in session:
-        return redirect(url_for("login"))
-
-    with sqlite3.connect("database.db") as conn:
-        cursor = conn.cursor()
-
-        if request.method == "POST":
-            if request.form.get("csrf_token") != session.get("csrf_token"):
-                return "Invalid CSRF token", 403
-
-            title = request.form["title"]
-            instructions = request.form["instructions"]
-            category = request.form["category"]
-
-            cursor.execute("""
-                UPDATE recipes
-                SET title = ?, instructions = ?, category = ?
-                WHERE id = ? AND username = ?
-            """, (title, instructions, category, recipe_id, session["username"]))
-            conn.commit()
-
-            return redirect(url_for("home"))
-
-        # GET: load recipe to edit
-        cursor.execute("SELECT title, instructions, category FROM recipes WHERE id = ? AND username = ?", (recipe_id, session["username"]))
-        recipe = cursor.fetchone()
-
-        if recipe:
-            return render_template("edit.html", recipe_id=recipe_id, recipe=recipe, csrf_token=get_csrf_token())
-        else:
-            return "Recipe not found."
 
 if __name__ == "__main__":
     init_db()

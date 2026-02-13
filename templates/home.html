@@ -1,70 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome</title>
+    <title>My Kitchen</title>
 </head>
 <body>
-	<form action="{{ url_for('main_page') }}" method="get">
-		<button type="submit">Back to Main Page</button>
-	</form>
-	
-    <h2>Welcome, {{ username }}!</h2>
-    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+    <h1>Welcome, {{ username }}!</h1>
+    <p><a href="{{ url_for('main_page') }}">Back to Main Feed</a> | <a href="{{ url_for('logout') }}">Logout</a></p>
 
-    <h3>Add a Recipe</h3>
+    <hr>
+
+    <h2>Create a New Recipe</h2>
+    {% if error %}
+        <p style="color: red; border: 1px solid red; padding: 10px;"><strong>{{ error }}</strong></p>
+    {% endif %}
+
     <form method="POST">
-		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label>Recipe Name:</label><br>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        
+        <label>Recipe Title:</label><br>
         <input type="text" name="title" required><br><br>
 
-        <label>How to Make It:</label><br>
-        <textarea name="instructions" rows="5" cols="40" required></textarea><br><br>
+        <label>Instructions (Max 1500 characters):</label><br>
+        <textarea name="instructions" rows="10" cols="60" maxlength="1500" required placeholder="Write your recipe here..."></textarea>
+        <br><br>
 
         <label>Category:</label><br>
         <select name="category" required>
+            <option value="main course">Main Course</option>
             <option value="dessert">Dessert</option>
             <option value="snack">Snack</option>
-            <option value="main course">Main Course</option>
         </select><br><br>
 
-        <input type="submit" value="Submit Recipe">
+        <button type="submit">Post Recipe</button>
     </form>
 
-    <h3>Your Recipes</h3>
+    <hr>
 
-{% for id, title, instructions, category in recipes %}
-    <div style="border:1px solid #ccc; padding:10px; margin:10px 0;">
-        <strong>{{ title }}</strong> ({{ category }})<br>
-        <p>{{ instructions.replace('\n', '<br>')|safe }}</p>
-
-        <form method="POST" action="{{ url_for('delete', recipe_id=id) }}" style="display:inline;">
-			<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-            <button type="submit">Delete</button>
-        </form>
-        <form method="GET" action="{{ url_for('edit', recipe_id=id) }}" style="display:inline;">
-            <button type="submit">Edit</button>
-        </form>
-
-        {% set rating = ratings_data[id] %}
-        {% if rating.avg %}
-            <p><strong>Average Rating:</strong> {{ rating.avg }} / 5 ({{ rating.count }} ratings)</p>
-        {% else %}
-            <p><strong>No ratings yet.</strong></p>
-        {% endif %}
-
-        {% if rating.comments %}
-            <p><strong>Recent Comments:</strong></p>
-            <ul>
-                {% for uname, r, c in rating.comments %}
-                    <li><strong>{{ uname }}</strong> rated {{ r }}/5 — "{{ c }}"</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    </div>
-{% else %}
-    <p>You haven’t added any recipes yet.</p>
-{% endfor %}
-
+    <h2>Your Existing Recipes</h2>
+    {% for id, title, instructions, category in recipes %}
+        <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;">
+            <h3>{{ title }} <small>({{ category }})</small></h3>
+            <p>{{ instructions.replace('\n', '<br>')|safe }}</p>
+            
+            <a href="{{ url_for('edit', recipe_id=id) }}">Edit</a> | 
+            <form action="{{ url_for('delete', recipe_id=id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                <button type="submit" onclick="return confirm('Are you sure?')">Delete</button>
+            </form>
+        </div>
+    {% else %}
+        <p>You haven't posted any recipes yet.</p>
+    {% endfor %}
 </body>
 </html>
-

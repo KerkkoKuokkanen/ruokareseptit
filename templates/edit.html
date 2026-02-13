@@ -4,24 +4,33 @@
     <title>Edit Recipe</title>
 </head>
 <body>
-    <h2>Edit Recipe</h2>
+    <h1>Edit Your Recipe</h1>
+
+    {% if error %}
+        <p style="color: red; border: 1px solid red; padding: 10px;"><strong>{{ error }}</strong></p>
+    {% endif %}
+
     <form method="POST">
-		<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <label>Recipe Name:</label><br>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        
+        <label>Recipe Title:</label><br>
         <input type="text" name="title" value="{{ recipe[0] }}" required><br><br>
 
-        <label>How to Make It:</label><br>
-        <textarea name="instructions" rows="5" cols="40" required>{{ recipe[1] }}</textarea><br><br>
+        <label>Instructions (Max 1500 characters):</label><br>
+        <textarea name="instructions" rows="12" cols="60" maxlength="1500" required>{{ recipe[1] }}</textarea>
+        <br>
+        <small>Current length: {{ recipe[1]|length }} / 1500 characters</small>
+        <br><br>
 
         <label>Category:</label><br>
         <select name="category" required>
+            <option value="main course" {% if recipe[2] == 'main course' %}selected{% endif %}>Main Course</option>
             <option value="dessert" {% if recipe[2] == 'dessert' %}selected{% endif %}>Dessert</option>
             <option value="snack" {% if recipe[2] == 'snack' %}selected{% endif %}>Snack</option>
-            <option value="main course" {% if recipe[2] == 'main course' %}selected{% endif %}>Main Course</option>
         </select><br><br>
 
-        <input type="submit" value="Save Changes">
+        <button type="submit">Save Changes</button>
+        <a href="{{ url_for('home') }}">Cancel</a>
     </form>
-    <p><a href="{{ url_for('home') }}">Back to Home</a></p>
 </body>
 </html>

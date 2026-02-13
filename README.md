@@ -37,6 +37,10 @@
 - Käyttäjä pystyy arvostelemaan muita reseptejä ja näkee kotisivuilla saamansa arviot
 - Resepteillä on luokittelu (main course, dessert, snack)
 
+- Uusi välipalautus 2
+- Kaikki toiminnot löytyy ja sivu on pääpiirteittään valmis
+- Tämän version tulisi päästä kurssista läpi
+
 # Lopullinen palautus
 - Tekoälyä käytetty
 - Sovelluksesta löytyy kaikki kurssilla vaaditut toiminnot
