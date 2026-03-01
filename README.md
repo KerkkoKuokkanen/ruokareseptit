@@ -51,3 +51,6 @@
 - Käyttäjä pystyy muokkaamaan ja poistamaan luomiaan reseptejä
 - Tietoturva vaatimukset on otettu huomioon sovelluksessa
 - Sovellus pyritty tekemään tarpeeksi hyväksi että saisin kurssin suoritettua :D
+
+- Uusi lopullinen palautus.
+- Palautteen esimerkit syistä miksi projekti ei ollut viimeksi hyväksytty korjattu
